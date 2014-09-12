@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 public abstract class Composite {
     private final Object parent;
 
-    public Composite(Object parent) {
+    protected Composite(Object parent) {
         this.parent = parent;
     }
 
