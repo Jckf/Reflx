@@ -1,5 +1,6 @@
 package it.flaten.reflx.reflection;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,33 +18,56 @@ public class ReflectionUtils {
         primitiveMap.put(double.class, Double.class);
     }
 
+    public static Constructor getCompatibleConstructor(Class c, Class... paramTypes) {
+        System.out.println(c.getSimpleName() + " has " + c.getConstructors().length + " constructors.");
+
+        for (Constructor m : c.getConstructors()) {
+            String thisTypes = "";
+            for (Class t : m.getParameterTypes()) {
+                thisTypes += t.getSimpleName() + ", ";
+            }
+
+            System.out.println(c.getSimpleName() + ".<init>(" + (thisTypes.length() != 0 ? thisTypes.substring(0, thisTypes.length() - 2) : "") + ")");
+
+            if (isCompatible(paramTypes, m.getParameterTypes()))
+                return m;
+
+            System.out.println("\tis not compatible.");
+        }
+
+        return null;
+    }
+
     public static Method getCompatibleMethod(Class c, String methodName, Class... paramTypes) {
         for (Method m : c.getMethods()) {
             if (!m.getName().equals(methodName))
                 continue;
 
-            Class<?>[] actualTypes = m.getParameterTypes();
-            if (actualTypes.length != paramTypes.length)
-                continue;
-
-            boolean found = true;
-            for (int j = 0; j < actualTypes.length; j++) {
-                if (!actualTypes[j].isAssignableFrom(paramTypes[j])) {
-                    if (actualTypes[j].isPrimitive()) {
-                        found = primitiveMap.get(actualTypes[j]).equals(paramTypes[j]);
-                    } else if (paramTypes[j].isPrimitive()) {
-                        found = primitiveMap.get(paramTypes[j]).equals(actualTypes[j]);
-                    }
-                }
-
-                if (!found)
-                    break;
-            }
-
-            if (found)
+            if (isCompatible(paramTypes, m.getParameterTypes()))
                 return m;
         }
 
         return null;
+    }
+
+    private static boolean isCompatible(Class[] paramTypes, Class<?>[] actualTypes) {
+        if (actualTypes.length != paramTypes.length)
+            return false;
+
+        boolean found = true;
+        for (int j = 0; j < actualTypes.length; j++) {
+            if (!actualTypes[j].isAssignableFrom(paramTypes[j])) {
+                if (actualTypes[j].isPrimitive()) {
+                    found = primitiveMap.get(actualTypes[j]).equals(paramTypes[j]);
+                } else if (paramTypes[j].isPrimitive()) {
+                    found = primitiveMap.get(paramTypes[j]).equals(actualTypes[j]);
+                }
+            }
+
+            if (!found)
+                break;
+        }
+
+        return found;
     }
 }
