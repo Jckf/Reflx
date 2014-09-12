@@ -2,102 +2,33 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>it.flaten</groupId>
-    <name>reflx</name>
-    <version>0.1.0-SNAPSHOT</version>
-    <artifactId>Reflx</artifactId>
+    <artifactId>ReflxParent</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0</version>
+    <name>ReflxParent</name>
 
     <properties>
         <jdk>1.7</jdk>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <main.class>it.flaten.reflx.Main</main.class>
     </properties>
 
-    <organization>
-        <name>Flaten IT</name>
-        <url>http://www.flaten.it/</url>
-    </organization>
-
-    <developers>
-        <developer>
-            <id>jckf</id>
-            <name>Jim Flaten</name>
-            <email>jim@flaten.it</email>
-        </developer>
-    </developers>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>1.9</version>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>ReflxAPI</module>
+        <module>Reflx</module>
+        <module>SamplePlugin</module>
+    </modules>
 
     <build>
-        <defaultGoal>clean install</defaultGoal>
-        <finalName>${project.artifactId}</finalName>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-
-                <configuration>
-                    <source>${jdk}</source>
-                    <target>${jdk}</target>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.1</version>
-
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-
-                        <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>org.yaml:snakeyaml</include>
-                                </includes>
-                            </artifactSet>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>${main.class}</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-        </plugins>
-
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <filtering>false</filtering>
-                <targetPath>.</targetPath>
-
-                <includes>
-                    <include>*</include>
-                </includes>
-            </resource>
-        </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>${jdk}</source>
+                        <target>${jdk}</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>

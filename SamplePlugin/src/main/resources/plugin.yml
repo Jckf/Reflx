@@ -1,0 +1,3 @@
+name: SamplePlugin
+version: 1.0
+main: no.jckf.reflx.sampleplugin.SamplePlugin
