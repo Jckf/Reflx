@@ -1,4 +1,4 @@
-package it.flaten.reflx.loaders;
+package it.flaten.reflx;
 
 import java.io.File;
 import java.lang.reflect.Method;

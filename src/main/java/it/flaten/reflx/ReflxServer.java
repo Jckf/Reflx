@@ -1,12 +1,17 @@
 package it.flaten.reflx;
 
-import it.flaten.reflx.command.TestCommand;
+import it.flaten.reflx.api.Plugin;
+import it.flaten.reflx.api.Server;
 import it.flaten.reflx.command.CommandHandler;
-import it.flaten.reflx.loaders.JarLoader;
+import it.flaten.reflx.plugin.PluginLoader;
 
 import java.lang.reflect.Method;
 
-public class ReflxServer {
+public class ReflxServer implements Server {
+    private PluginLoader pluginLoader;
+    private CommandHandler commandHandler;
+
+    @Override
     public void run() {
         JarLoader.load("minecraft_server.jar");
 
@@ -21,12 +26,23 @@ public class ReflxServer {
             return;
         }
 
-        CommandHandler commandHandler = CommandHandler.inject(minecraftServer);
+        this.pluginLoader = new PluginLoader(this);
+        this.commandHandler = CommandHandler.inject(minecraftServer);
 
-        if (commandHandler == null)
-            System.exit(1);
+        this.pluginLoader.load("plugins");
 
-        // Todo: Load plugins.
-        commandHandler.registerCommand("test", new TestCommand());
+        for (Plugin plugin : this.pluginLoader.getPlugins()) {
+            plugin.onEnable();
+        }
+    }
+
+    @Override
+    public PluginLoader getPluginLoader() {
+        return this.pluginLoader;
+    }
+
+    @Override
+    public CommandHandler getCommandHandler() {
+        return this.commandHandler;
     }
 }
