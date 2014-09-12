@@ -2,33 +2,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>it.flaten</groupId>
-    <artifactId>ReflxParent</artifactId>
+    <artifactId>reflxroot</artifactId>
     <packaging>pom</packaging>
     <version>1.0</version>
-    <name>ReflxParent</name>
-
-    <properties>
-        <jdk>1.7</jdk>
-    </properties>
+    <name>ReflxRoot</name>
 
     <modules>
         <module>ReflxAPI</module>
         <module>Reflx</module>
         <module>SamplePlugin</module>
     </modules>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>${jdk}</source>
-                        <target>${jdk}</target>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 </project>
