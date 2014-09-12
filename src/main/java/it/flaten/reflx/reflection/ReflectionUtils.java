@@ -19,21 +19,9 @@ public class ReflectionUtils {
     }
 
     public static Constructor getCompatibleConstructor(Class c, Class... paramTypes) {
-        System.out.println(c.getSimpleName() + " has " + c.getConstructors().length + " constructors.");
-
-        for (Constructor m : c.getConstructors()) {
-            String thisTypes = "";
-            for (Class t : m.getParameterTypes()) {
-                thisTypes += t.getSimpleName() + ", ";
-            }
-
-            System.out.println(c.getSimpleName() + ".<init>(" + (thisTypes.length() != 0 ? thisTypes.substring(0, thisTypes.length() - 2) : "") + ")");
-
+        for (Constructor m : c.getConstructors())
             if (isCompatible(paramTypes, m.getParameterTypes()))
                 return m;
-
-            System.out.println("\tis not compatible.");
-        }
 
         return null;
     }
