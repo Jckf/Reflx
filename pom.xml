@@ -25,6 +25,14 @@
         </developer>
     </developers>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.9</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <defaultGoal>clean install</defaultGoal>
         <finalName>${project.artifactId}</finalName>
@@ -40,6 +48,30 @@
                     <target>${jdk}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.1</version>
+
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>org.yaml:snakeyaml</include>
+                                </includes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
