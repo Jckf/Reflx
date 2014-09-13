@@ -7,7 +7,7 @@ import java.util.Map;
 public class MethodCache {
     private static final Map<String, Method> cache = new HashMap<>();
 
-    public static String getKey(Object object, String methodName, Object[] args) {
+    public static String getKey(Object object, String methodName, Object... args) {
         String argClassesString = "";
         for (int i = 0; i < args.length; i++)
             argClassesString += args[i].getClass().getSimpleName() + ", ";
@@ -15,7 +15,7 @@ public class MethodCache {
         return object.getClass().getName() + "." + methodName + "(" + (argClassesString.length() > 0 ? argClassesString.substring(0, argClassesString.length() - 2) : "") + ")";
     }
 
-    public static Method getMethod(Object object, String methodName, Object[] args) {
+    public static Method getMethod(Object object, String methodName, Object... args) {
         Class[] argClasses = new Class[args.length];
         for (int i = 0; i < args.length; i++)
             argClasses[i] = args[i].getClass();

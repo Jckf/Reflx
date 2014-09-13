@@ -1,5 +1,6 @@
 package it.flaten.reflx.command;
 
+import it.flaten.reflx.reflection.MethodCache;
 import it.flaten.reflxapi.command.CommandExecutor;
 import it.flaten.reflxapi.command.CommandHandler;
 import it.flaten.reflxapi.command.CommandSender;
@@ -7,6 +8,7 @@ import it.flaten.reflx.entity.ReflxPlayer;
 import it.flaten.reflx.reflection.Interceptor;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,8 +51,11 @@ public class ReflxCommandHandler implements CommandHandler {
             // Fetch the MinecraftServer instance.
             Object serverInstance = serverField.get(serverThread);
 
+            // Fetch the vanilla command handler.
+            Object originalHandler = commandHandler.get(serverInstance);
+
             // Our custom handler.
-            ReflxCommandHandler customHandler = new ReflxCommandHandler();
+            ReflxCommandHandler customHandler = new ReflxCommandHandler(originalHandler);
 
             // Method rerouting map.
             Map<String, String> mapping = new HashMap<>();
@@ -61,10 +66,10 @@ public class ReflxCommandHandler implements CommandHandler {
             commandHandler.set(
                 serverInstance,
                 Interceptor.getProxy(
-                    new Class[]{ Class.forName("ab") }, // Interfaces our proxy implements.
-                    commandHandler.get(serverInstance), // Original command handler.
-                    customHandler,                      // Custom command handler.
-                    mapping                             // Method rerouting map.
+                    new Class[]{ Class.forName("ab") },
+                    originalHandler,
+                    customHandler,
+                    mapping
                 )
             );
 
@@ -76,9 +81,13 @@ public class ReflxCommandHandler implements CommandHandler {
         return null;
     }
 
+    private final Object originalHandler;
+
     private final Map<String, CommandExecutor> commands;
 
-    public ReflxCommandHandler() {
+    public ReflxCommandHandler(Object originalHandler) {
+        this.originalHandler = originalHandler;
+
         this.commands = new HashMap<>();
     }
 
@@ -104,7 +113,11 @@ public class ReflxCommandHandler implements CommandHandler {
             return 0;
         }
 
-        // Todo: Pass unknown commands to vanilla code.
+        try {
+            return (int) MethodCache.getMethod(this.originalHandler, "a", sender.getClass(), String.class).invoke(this.originalHandler, sender, commandRaw);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
 
         return 0;
     }
