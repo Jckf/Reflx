@@ -8,7 +8,7 @@ Reflx is a Minecraft server wrapper (and API), but not in the traditional sense.
 
 Using reflections to attach to the official server means that we don't have to include any of Mojang's code in our repository or artifacts, which would violate their EULA. It also means that game updates (even snapshots!) can be supported by simply providing updated class, field, and method mappings.
 
-## Isn't this exactly what (https://github.com/GraniteTeam)[Granite] is doing?
+## Isn't this exactly what [Granite](https://github.com/GraniteTeam) is doing?
 
 Yes! In fact, this project started in dialog with them, and we frequently exchange ideas :) But differences in implementation separate the two projects.
 
