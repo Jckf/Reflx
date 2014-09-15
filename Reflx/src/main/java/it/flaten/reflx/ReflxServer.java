@@ -39,8 +39,13 @@ public class ReflxServer implements Server {
         }
 
         this.commandHandler = new ReflxCommandHandler(this);
-        this.commandHandler.inject();
-
+        try {
+            this.commandHandler.inject();
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+            return;
+        }
+        
         this.pluginLoader = new ReflxPluginLoader(this);
         this.pluginLoader.load("plugins");
 
@@ -57,5 +62,9 @@ public class ReflxServer implements Server {
     @Override
     public CommandHandler getCommandHandler() {
         return this.commandHandler;
+    }
+
+    public Mapper getMapper() {
+        return this.mapper;
     }
 }

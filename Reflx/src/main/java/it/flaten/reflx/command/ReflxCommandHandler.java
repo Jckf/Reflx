@@ -28,65 +28,61 @@ public class ReflxCommandHandler implements CommandHandler {
         this.commands = new HashMap<>();
     }
 
-    public void inject() {
-        try {
-            Class minecraftServer = Class.forName("net.minecraft.server.MinecraftServer");
+    public void inject() throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Class minecraftServer = Class.forName("net.minecraft.server.MinecraftServer");
 
-            // Find the field that holds the command executor.
-            Field commandHandler = null;
-            for (Field field : minecraftServer.getDeclaredFields()) {
-                if (field.getName().equals("o")) {
-                    commandHandler = field;
-                    break;
-                }
+        // Find the field that holds the command executor.
+        Field commandHandler = null;
+        for (Field field : minecraftServer.getDeclaredFields()) {
+            if (field.getName().equals("o")) {
+                commandHandler = field;
+                break;
             }
-
-            // Make it accessible.
-            commandHandler.setAccessible(true);
-
-            // Make it non-final.
-            Field modifiers = Field.class.getDeclaredField("modifiers");
-            modifiers.setAccessible(true);
-            modifiers.setInt(commandHandler, commandHandler.getModifiers() & ~Modifier.FINAL);
-
-            // Find an object that holds a reference to the MinecraftServer instance.
-            Thread serverThread = null;
-            Set<Thread> threads = Thread.getAllStackTraces().keySet();
-            for (Thread thread : threads) {
-                if (thread.getName().equals("Server thread")) {
-                    serverThread = thread;
-                    break;
-                }
-            }
-
-            // Fetch the field and make it accessible.
-            Field serverField = serverThread.getClass().getDeclaredField("a");
-            serverField.setAccessible(true);
-
-            // Fetch the MinecraftServer instance.
-            Object serverInstance = serverField.get(serverThread);
-
-            // Fetch the vanilla command handler.
-            this.originalHandler = commandHandler.get(serverInstance);
-
-            // Method rerouting map.
-            Map<String, String> mapping = new HashMap<>();
-            mapping.put("bl.a(lt, String)", "executeCommand"); // Console commands.
-            mapping.put("bl.a(mw, String)", "executeCommand"); // In-game commands.
-
-            // Set the command handler field in the MinecraftServer instance to a proxy with our interceptor.
-            commandHandler.set(
-                serverInstance,
-                Interceptor.getProxy(
-                    new Class[]{ Class.forName("ab") },
-                    this.originalHandler,
-                    this,
-                    mapping
-                )
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
+        // Make it accessible.
+        commandHandler.setAccessible(true);
+
+        // Make it non-final.
+        Field modifiers = Field.class.getDeclaredField("modifiers");
+        modifiers.setAccessible(true);
+        modifiers.setInt(commandHandler, commandHandler.getModifiers() & ~Modifier.FINAL);
+
+        // Find an object that holds a reference to the MinecraftServer instance.
+        Thread serverThread = null;
+        Set<Thread> threads = Thread.getAllStackTraces().keySet();
+        for (Thread thread : threads) {
+            if (thread.getName().equals("Server thread")) {
+                serverThread = thread;
+                break;
+            }
+        }
+
+        // Fetch the field and make it accessible.
+        Field serverField = serverThread.getClass().getDeclaredField("a");
+        serverField.setAccessible(true);
+
+        // Fetch the MinecraftServer instance.
+        Object serverInstance = serverField.get(serverThread);
+
+        // Fetch the vanilla command handler.
+        this.originalHandler = commandHandler.get(serverInstance);
+
+        // Method rerouting map.
+        Map<String, String> mapping = new HashMap<>();
+        mapping.put("bl.a(lt, String)", "executeCommand"); // Console commands.
+        mapping.put("bl.a(mw, String)", "executeCommand"); // In-game commands.
+
+        // Set the command handler field in the MinecraftServer instance to a proxy with our interceptor.
+        commandHandler.set(
+            serverInstance,
+            Interceptor.getProxy(
+                new Class[]{ Class.forName("ab") },
+                this.originalHandler,
+                this,
+                mapping
+            )
+        );
     }
 
     @Override
