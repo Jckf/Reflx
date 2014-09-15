@@ -1,6 +1,7 @@
 package it.flaten.reflx.command;
 
 import it.flaten.reflx.reflection.MethodCache;
+import it.flaten.reflxapi.Server;
 import it.flaten.reflxapi.command.CommandExecutor;
 import it.flaten.reflxapi.command.CommandHandler;
 import it.flaten.reflxapi.command.CommandSender;
@@ -15,8 +16,22 @@ import java.util.Map;
 import java.util.Set;
 
 public class ReflxCommandHandler implements CommandHandler {
-    public static ReflxCommandHandler inject(Class minecraftServer) {
+    private final Server server;
+
+    private Object originalHandler;
+
+    private final Map<String, CommandExecutor> commands;
+
+    public ReflxCommandHandler(Server server) {
+        this.server = server;
+
+        this.commands = new HashMap<>();
+    }
+
+    public void inject() {
         try {
+            Class minecraftServer = Class.forName("net.minecraft.server.MinecraftServer");
+
             // Find the field that holds the command executor.
             Field commandHandler = null;
             for (Field field : minecraftServer.getDeclaredFields()) {
@@ -52,10 +67,7 @@ public class ReflxCommandHandler implements CommandHandler {
             Object serverInstance = serverField.get(serverThread);
 
             // Fetch the vanilla command handler.
-            Object originalHandler = commandHandler.get(serverInstance);
-
-            // Our custom handler.
-            ReflxCommandHandler customHandler = new ReflxCommandHandler(originalHandler);
+            this.originalHandler = commandHandler.get(serverInstance);
 
             // Method rerouting map.
             Map<String, String> mapping = new HashMap<>();
@@ -67,28 +79,14 @@ public class ReflxCommandHandler implements CommandHandler {
                 serverInstance,
                 Interceptor.getProxy(
                     new Class[]{ Class.forName("ab") },
-                    originalHandler,
-                    customHandler,
+                    this.originalHandler,
+                    this,
                     mapping
                 )
             );
-
-            return customHandler;
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return null;
-    }
-
-    private final Object originalHandler;
-
-    private final Map<String, CommandExecutor> commands;
-
-    public ReflxCommandHandler(Object originalHandler) {
-        this.originalHandler = originalHandler;
-
-        this.commands = new HashMap<>();
     }
 
     @Override
