@@ -1,16 +1,31 @@
 package it.flaten.reflx.reflection;
 
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
-public class Interceptor implements InvocationHandler {
+public class Interceptor implements InvocationHandler, MethodHandler {
+    // Native Java proxy.
     public static Object getProxy(Class[] interfaces, Object original, Object custom, Map<String, String> mapping) {
         return Proxy.newProxyInstance(
             Interceptor.class.getClassLoader(),
             interfaces,
+            new Interceptor(original, custom, mapping)
+        );
+    }
+
+    // Javassist proxy.
+    public static Object getProxy(Object original, Object custom, Map<String, String> mapping) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        ProxyFactory factory = new ProxyFactory();
+        factory.setSuperclass(original.getClass());
+        return factory.create(
+            new Class[]{ },
+            new Object[]{ },
             new Interceptor(original, custom, mapping)
         );
     }
@@ -54,5 +69,11 @@ public class Interceptor implements InvocationHandler {
 
         // Things went south.
         return null;
+    }
+
+    // Forwards Javassist proxied invokations.
+    @Override
+    public Object invoke(Object proxy, Method method, Method proceed, Object[] args) throws Throwable {
+        return this.invoke(proxy, method, args);
     }
 }
