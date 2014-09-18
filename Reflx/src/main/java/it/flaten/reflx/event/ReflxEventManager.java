@@ -33,10 +33,12 @@ public class ReflxEventManager implements EventManager {
             if (annotation == null)
                 continue;
 
-            if (method.getParameterCount() != 1)
+            Class[] params = method.getParameterTypes();
+
+            if (params.length != 1)
                 continue;
 
-            Class eventType = method.getParameterTypes()[0];
+            Class eventType = params[0];
 
             if (!(eventType.getSuperclass().equals(Event.class)))
                 continue;
