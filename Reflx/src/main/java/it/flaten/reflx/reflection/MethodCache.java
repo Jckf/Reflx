@@ -14,7 +14,7 @@ public class MethodCache {
     public static String getKey(Class clazz, String methodName, Object... args) {
         String argClassesString = "";
         for (int i = 0; i < args.length; i++)
-            argClassesString += args[i].getClass().getSimpleName() + ", ";
+            argClassesString += (args[i] == null ? "null" : args[i].getClass().getSimpleName()) + ", ";
 
         return clazz.getName() + "." + methodName + "(" + (argClassesString.length() > 0 ? argClassesString.substring(0, argClassesString.length() - 2) : "") + ")";
     }
