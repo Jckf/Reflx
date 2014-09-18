@@ -1,7 +1,7 @@
 package it.flaten.reflx.command;
 
+import it.flaten.reflx.ReflxServer;
 import it.flaten.reflx.reflection.MethodCache;
-import it.flaten.reflxapi.Server;
 import it.flaten.reflxapi.command.CommandExecutor;
 import it.flaten.reflxapi.command.CommandHandler;
 import it.flaten.reflxapi.command.CommandSender;
@@ -13,16 +13,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class ReflxCommandHandler implements CommandHandler {
-    private final Server server;
+    private final ReflxServer server;
 
     private Object originalHandler;
 
     private final Map<String, CommandExecutor> commands;
 
-    public ReflxCommandHandler(Server server) {
+    public ReflxCommandHandler(ReflxServer server) {
         this.server = server;
 
         this.commands = new HashMap<>();
@@ -48,22 +47,7 @@ public class ReflxCommandHandler implements CommandHandler {
         modifiers.setAccessible(true);
         modifiers.setInt(commandHandler, commandHandler.getModifiers() & ~Modifier.FINAL);
 
-        // Find an object that holds a reference to the MinecraftServer instance.
-        Thread serverThread = null;
-        Set<Thread> threads = Thread.getAllStackTraces().keySet();
-        for (Thread thread : threads) {
-            if (thread.getName().equals("Server thread")) {
-                serverThread = thread;
-                break;
-            }
-        }
-
-        // Fetch the field and make it accessible.
-        Field serverField = serverThread.getClass().getDeclaredField("a");
-        serverField.setAccessible(true);
-
-        // Fetch the MinecraftServer instance.
-        Object serverInstance = serverField.get(serverThread);
+        Object serverInstance = this.server.getServer();
 
         // Fetch the vanilla command handler.
         this.originalHandler = commandHandler.get(serverInstance);
