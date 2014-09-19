@@ -42,33 +42,48 @@ public class Interceptor implements InvocationHandler, MethodHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
+        Hook hook = new Hook();
+        Method customMethod = null;
+        Object[] customArgs = new Object[args.length + 1];
+
         // Get a string representation of this invokation.
         String key = MethodCache.getKey(this.original, method.getName(), args);
 
         // Look for a custom handler.
-        boolean isCustom = false;
         if (this.mapping.containsKey(key)) {
+            customArgs[0] = hook;
+            System.arraycopy(args, 0, customArgs, 1, args.length);
+
             Method cached = MethodCache.getMethod(
                 this.custom,
                 this.mapping.get(key),
-                args
+                customArgs
             );
 
-            if (cached != null) {
-                method = cached;
-                isCustom = true;
-            }
+            if (cached != null)
+                customMethod = cached;
         }
 
+        if (customMethod == null && !key.equals("ls.d(mw)") && !key.equals("ls.s()"))
+            System.out.println(key + " => " + method);
+
         // Go ahead.
+        Object toReturn = null;
         try {
-            return method.invoke(isCustom ? this.custom : this.original, args);
+            if (customMethod != null)
+                toReturn = customMethod.invoke(this.custom, customArgs);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
 
-        // Things went south.
-        return null;
+        try {
+            if (!hook.isCancelled())
+                toReturn = method.invoke(this.original, args);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+        return toReturn;
     }
 
     // Forwards Javassist proxied invokations.

@@ -1,13 +1,18 @@
 package it.flaten.reflx;
 
 import it.flaten.reflx.entity.ReflxPlayer;
+import it.flaten.reflx.reflection.Hook;
 import it.flaten.reflx.reflection.Interceptor;
+import it.flaten.reflx.reflection.MethodCache;
 import it.flaten.reflx.reflection.ReflectionUtils;
+import it.flaten.reflxapi.event.ServerTickEvent;
 import it.flaten.reflxapi.event.player.PlayerLoginEvent;
+import it.flaten.reflxapi.event.player.PlayerLogoutEvent;
 import javassist.*;
 
 import java.lang.reflect.*;
 import java.lang.reflect.Modifier;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +53,9 @@ public class ReflxPlayerList {
         }
 
         Map<String, String> mapping = new HashMap<>();
+        mapping.put("ls.e()", "serverTick");
         mapping.put("ls.a(ej, mw)", "initConnection");
+        mapping.put("ls.e(mw)", "playerLogout");
 
         configManagerField.set(
             dedicatedServer,
@@ -75,22 +82,15 @@ public class ReflxPlayerList {
         }
     }
 
-    public void initConnection(Object networkManager, Object entityPlayer) {
-        this.server.getEventManager().triggerEvent(new PlayerLoginEvent(new ReflxPlayer(entityPlayer)));
+    public void serverTick(Hook hook) {
+        this.server.getEventManager().triggerEvent(new ServerTickEvent());
+    }
 
-        try {
-            ReflectionUtils.getCompatibleMethod(
-                Class.forName("ls"),
-                "a",
-                networkManager.getClass(),
-                entityPlayer.getClass()
-            ).invoke(
-                this.originalConfigManager,
-                networkManager,
-                entityPlayer
-            );
-        } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
+    public void initConnection(Hook hook, Object networkManager, Object entityPlayer) {
+        this.server.getEventManager().triggerEvent(new PlayerLoginEvent(new ReflxPlayer(entityPlayer)));
+    }
+
+    public void playerLogout(Hook hook, Object entityPlayer) {
+        this.server.getEventManager().triggerEvent(new PlayerLogoutEvent(new ReflxPlayer(entityPlayer)));
     }
 }
